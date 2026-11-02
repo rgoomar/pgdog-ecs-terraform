@@ -248,6 +248,19 @@ capacity_provider_strategy = [
 ]
 ```
 
+Do not use Fargate Spot for a production pooler. A Spot interruption drops every client connection on that task. Use it only for non-critical environments.
+
+### Scaling and load balancer options
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|----------|
+| `enable_memory_autoscaling` | Also scale on memory utilization. A memory policy can block scale-in | `bool` | `true` | no |
+| `disable_scale_in` | Never scale in automatically. Scale-in stops tasks that hold client connections | `bool` | `false` | no |
+| `deployment_minimum_healthy_percent` | Lower limit on running tasks during a deployment | `number` | `100` | no |
+| `deployment_maximum_percent` | Upper limit on running tasks during a deployment | `number` | `200` | no |
+| `nlb_cross_zone` | Cross-zone load balancing on the NLB. Off avoids cross-AZ transfer charges | `bool` | `true` | no |
+| `nlb_deletion_protection` | Deletion protection on the NLB | `bool` | `false` | no |
+
 ### Logging
 
 | Name | Description | Type | Default | Required |

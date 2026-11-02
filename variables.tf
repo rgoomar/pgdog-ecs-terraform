@@ -385,6 +385,42 @@ variable "memory_target_value" {
   default     = 70
 }
 
+variable "enable_memory_autoscaling" {
+  description = "Scale on average memory utilization as well as CPU. PgDog memory use does not follow load closely, and target tracking scales in only when every policy agrees, so a memory policy can block scale-in."
+  type        = bool
+  default     = true
+}
+
+variable "disable_scale_in" {
+  description = "Never scale in automatically. Scale-in stops tasks that hold client connections, so some teams scale in by hand."
+  type        = bool
+  default     = false
+}
+
+variable "deployment_minimum_healthy_percent" {
+  description = "Lower limit on running tasks, as a percentage of desired_count, during a deployment"
+  type        = number
+  default     = 100
+}
+
+variable "deployment_maximum_percent" {
+  description = "Upper limit on running tasks, as a percentage of desired_count, during a deployment"
+  type        = number
+  default     = 200
+}
+
+variable "nlb_cross_zone" {
+  description = "Enable cross-zone load balancing on the NLB. Turning it off avoids cross-AZ data transfer charges, but you then need tasks in every NLB subnet's AZ."
+  type        = bool
+  default     = true
+}
+
+variable "nlb_deletion_protection" {
+  description = "Enable deletion protection on the NLB"
+  type        = bool
+  default     = false
+}
+
 variable "scale_in_cooldown" {
   description = "Scale in cooldown in seconds"
   type        = number

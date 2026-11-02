@@ -330,6 +330,9 @@ resource "aws_ecs_service" "pgdog" {
 
   health_check_grace_period_seconds = var.health_check_grace_period
 
+  deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
+  deployment_maximum_percent         = var.deployment_maximum_percent
+
   deployment_circuit_breaker {
     enable   = true
     rollback = true

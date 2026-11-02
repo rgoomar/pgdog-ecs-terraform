@@ -10,7 +10,8 @@ resource "aws_lb" "pgdog" {
   load_balancer_type = "network"
   subnets            = coalesce(var.nlb_subnet_ids, var.subnet_ids)
 
-  enable_cross_zone_load_balancing = true
+  enable_cross_zone_load_balancing = var.nlb_cross_zone
+  enable_deletion_protection       = var.nlb_deletion_protection
 
   tags = var.tags
 }

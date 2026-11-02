@@ -33,6 +33,7 @@ resource "aws_appautoscaling_policy" "cpu" {
     target_value       = var.cpu_target_value
     scale_in_cooldown  = var.scale_in_cooldown
     scale_out_cooldown = var.scale_out_cooldown
+    disable_scale_in   = var.disable_scale_in
   }
 }
 
@@ -41,7 +42,7 @@ resource "aws_appautoscaling_policy" "cpu" {
 # ------------------------------------------------------------------------------
 
 resource "aws_appautoscaling_policy" "memory" {
-  count = var.create_resources ? 1 : 0
+  count = var.create_resources && var.enable_memory_autoscaling ? 1 : 0
 
   name               = "${var.name}-pgdog-memory"
   policy_type        = "TargetTrackingScaling"
@@ -57,5 +58,6 @@ resource "aws_appautoscaling_policy" "memory" {
     target_value       = var.memory_target_value
     scale_in_cooldown  = var.scale_in_cooldown
     scale_out_cooldown = var.scale_out_cooldown
+    disable_scale_in   = var.disable_scale_in
   }
 }
