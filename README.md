@@ -276,13 +276,25 @@ deregistration_delay      = 60
 |------|-------------|------|---------|----------|
 | `export_metrics_to_cloudwatch` | Export PgDog Prometheus metrics to CloudWatch using ADOT sidecar | `bool` | `true` | no |
 | `cloudwatch_metrics_namespace` | CloudWatch metrics namespace for PgDog metrics | `string` | `PgDog` | no |
-| `metrics_collection_interval` | How often to scrape metrics (in seconds) | `number` | `60` | no |
+| `metrics_collection_interval` | How often to scrape metrics (in seconds) | `number` | `30` | no |
+| `metrics_log_retention_days` | Retention for the CloudWatch log group holding exported metrics | `number` | `log_retention_days` | no |
+| `extra_container_definitions` | Extra container definitions for the task, such as a Datadog Agent sidecar | `any` | `[]` | no |
 
 ```hcl
 export_metrics_to_cloudwatch = true
 cloudwatch_metrics_namespace = "MyApp/PgDog"
 metrics_collection_interval  = 30
 ```
+
+The module now creates the metrics log group `/aws/ecs/<name>-pgdog/metrics` itself so it has a retention period. If an earlier deployment already created it (the ADOT sidecar did), import it first: `terraform import 'module.pgdog.aws_cloudwatch_log_group.metrics[0]' /aws/ecs/<name>-pgdog/metrics`.
+
+### Alarms
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|----------|
+| `create_alarms` | Create alarms for unhealthy targets, too few healthy targets and high CPU | `bool` | `false` | no |
+| `alarm_actions` | ARNs notified when an alarm changes state (for example an SNS topic) | `list(string)` | `[]` | no |
+| `alarm_cpu_threshold` | Average service CPU percentage for the high CPU alarm | `number` | `85` | no |
 
 ### TLS configuration
 

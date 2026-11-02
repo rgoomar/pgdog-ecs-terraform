@@ -348,7 +348,7 @@ locals {
       awsemf = {
         namespace               = var.cloudwatch_metrics_namespace
         region                  = data.aws_region.current[0].id
-        log_group_name          = "/aws/ecs/${var.name}-pgdog/metrics"
+        log_group_name          = aws_cloudwatch_log_group.metrics[0].name
         log_stream_name         = "otel-metrics"
         dimension_rollup_option = "NoDimensionRollup"
         resource_to_telemetry_conversion = {

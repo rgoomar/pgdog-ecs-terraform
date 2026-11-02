@@ -282,7 +282,9 @@ EOF
       }
     ],
     # ADOT sidecar for CloudWatch metrics export (optional)
-    local.adot_container
+    local.adot_container,
+    # Caller-supplied containers, for example a Datadog Agent
+    var.extra_container_definitions
   ))
 
   volume {
@@ -342,6 +344,7 @@ resource "aws_ecs_service" "pgdog" {
   depends_on = [
     aws_lb_listener.pgdog[0],
     aws_cloudwatch_log_group.pgdog[0],
+    aws_cloudwatch_log_group.metrics,
     aws_iam_role_policy.task_execution_logs[0],
     aws_iam_role_policy.task_secrets[0]
   ]

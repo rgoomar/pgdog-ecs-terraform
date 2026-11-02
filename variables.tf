@@ -455,6 +455,40 @@ variable "metrics_collection_interval" {
   default     = 30
 }
 
+variable "metrics_log_retention_days" {
+  description = "Retention in days for the CloudWatch log group that holds exported metrics. Defaults to log_retention_days."
+  type        = number
+  default     = null
+}
+
+variable "extra_container_definitions" {
+  description = "Extra container definitions added to the task, for example a Datadog Agent sidecar. Use the ECS container definition JSON keys. The task execution role (task_execution_role_arn output) needs access to any secrets they use."
+  type        = any
+  default     = []
+}
+
+# ------------------------------------------------------------------------------
+# Alarms
+# ------------------------------------------------------------------------------
+
+variable "create_alarms" {
+  description = "Create CloudWatch alarms for unhealthy targets, too few healthy targets and high CPU"
+  type        = bool
+  default     = false
+}
+
+variable "alarm_actions" {
+  description = "ARNs (for example SNS topics) notified when an alarm changes state"
+  type        = list(string)
+  default     = []
+}
+
+variable "alarm_cpu_threshold" {
+  description = "Average service CPU percentage that triggers the high CPU alarm"
+  type        = number
+  default     = 85
+}
+
 # ------------------------------------------------------------------------------
 # TLS Configuration
 # ------------------------------------------------------------------------------
