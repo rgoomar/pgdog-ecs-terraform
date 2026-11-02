@@ -289,6 +289,13 @@ EOF
     name = "config"
   }
 
+  lifecycle {
+    precondition {
+      condition     = var.tls_mode != "secrets_manager" || (var.tls_certificate_secret_arn != null && var.tls_private_key_secret_arn != null)
+      error_message = "tls_certificate_secret_arn and tls_private_key_secret_arn are required when tls_mode = \"secrets_manager\"."
+    }
+  }
+
   tags = var.tags
 }
 

@@ -499,3 +499,37 @@ variable "tls_self_signed_validity_days" {
   type        = number
   default     = 365
 }
+
+# ------------------------------------------------------------------------------
+# IAM, encryption and config escape hatch
+# ------------------------------------------------------------------------------
+
+variable "iam_role_path" {
+  description = "Path for the IAM roles created by this module"
+  type        = string
+  default     = "/"
+}
+
+variable "iam_permissions_boundary_arn" {
+  description = "ARN of an IAM permissions boundary to attach to the roles created by this module"
+  type        = string
+  default     = null
+}
+
+variable "secrets_kms_key_arn" {
+  description = "ARN of a customer managed KMS key to encrypt the pgdog.toml secret. The task execution role gets kms:Decrypt on it. Uses the AWS managed key when null."
+  type        = string
+  default     = null
+}
+
+variable "additional_kms_key_arns" {
+  description = "ARNs of other KMS keys that encrypt secrets read by ECS (user passwords, TLS material). The task execution role gets kms:Decrypt on them."
+  type        = list(string)
+  default     = []
+}
+
+variable "extra_general_toml" {
+  description = "Raw TOML lines added to the [general] section of pgdog.toml. Use it for PgDog settings that this module does not expose yet. Must not duplicate a key the module already sets."
+  type        = string
+  default     = null
+}

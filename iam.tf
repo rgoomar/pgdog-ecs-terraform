@@ -18,7 +18,9 @@ data "aws_caller_identity" "current" {
 resource "aws_iam_role" "task_execution" {
   count = var.create_resources ? 1 : 0
 
-  name = "${var.name}-pgdog-execution"
+  name                 = "${var.name}-pgdog-execution"
+  path                 = var.iam_role_path
+  permissions_boundary = var.iam_permissions_boundary_arn
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -77,7 +79,9 @@ resource "aws_iam_role_policy" "task_execution_logs" {
 resource "aws_iam_role" "task" {
   count = var.create_resources ? 1 : 0
 
-  name = "${var.name}-pgdog-task"
+  name                 = "${var.name}-pgdog-task"
+  path                 = var.iam_role_path
+  permissions_boundary = var.iam_permissions_boundary_arn
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

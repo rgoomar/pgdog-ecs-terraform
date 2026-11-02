@@ -249,6 +249,7 @@ EOT
     local.g.lsn_check_delay != null || local.has_aurora ? "lsn_check_delay = ${coalesce(local.g.lsn_check_delay, 0)}" : "",
     local.g.lsn_check_interval != null || local.has_aurora ? "lsn_check_interval = ${coalesce(local.g.lsn_check_interval, 1000)}" : "",
     local.g.lsn_check_timeout != null ? "lsn_check_timeout = ${local.g.lsn_check_timeout}" : "",
+    var.extra_general_toml != null ? var.extra_general_toml : "",
     "",
     local.databases_toml,
     local.mirrors_toml,

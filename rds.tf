@@ -46,7 +46,7 @@ data "aws_db_instance" "aurora" {
 
 locals {
   # Process RDS instances - detect primary/replica status
-  rds_databases = [
+  rds_databases = var.create_resources ? [
     for db in var.rds_instances : {
       name      = db.database_name
       host      = data.aws_db_instance.this[db.identifier].address
@@ -60,7 +60,7 @@ locals {
       identifier = db.identifier
       shard      = db.shard
     }
-  ]
+  ] : []
 
   # Process Aurora clusters - use individual instance endpoints
   # Role is "auto" - PgDog detects primary/replica via LSN checking

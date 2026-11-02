@@ -7,6 +7,7 @@ resource "aws_secretsmanager_secret" "pgdog_config" {
 
   name        = "${var.name}-pgdog-config"
   description = "PgDog configuration (pgdog.toml)"
+  kms_key_id  = var.secrets_kms_key_arn
 
   tags = var.tags
 }

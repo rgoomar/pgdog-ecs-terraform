@@ -303,3 +303,21 @@ tls_mode                   = "secrets_manager"
 tls_certificate_secret_arn = "arn:aws:secretsmanager:us-east-1:123456789:secret:pgdog-cert"
 tls_private_key_secret_arn = "arn:aws:secretsmanager:us-east-1:123456789:secret:pgdog-key"
 ```
+
+### IAM, encryption and config escape hatch
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|----------|
+| `iam_role_path` | Path for the IAM roles | `string` | `/` | no |
+| `iam_permissions_boundary_arn` | Permissions boundary for the IAM roles | `string` | `null` | no |
+| `secrets_kms_key_arn` | Customer managed KMS key for the `pgdog.toml` secret. The execution role gets `kms:Decrypt` | `string` | `null` | no |
+| `additional_kms_key_arns` | Other KMS keys that encrypt secrets ECS reads (user passwords, TLS). The execution role gets `kms:Decrypt` | `list(string)` | `[]` | no |
+| `extra_general_toml` | Raw TOML lines added to `[general]` for settings the module does not expose yet | `string` | `null` | no |
+
+```hcl
+extra_general_toml = <<-EOT
+  listen_backlog = 2048
+EOT
+```
+
+With `tls_mode = "secrets_manager"`, both `tls_certificate_secret_arn` and `tls_private_key_secret_arn` are now checked at plan time.
