@@ -98,7 +98,9 @@ EOF
   # ADOT sidecar container definition (for CloudWatch metrics export)
   adot_container = var.create_resources && var.export_metrics_to_cloudwatch ? [{
     name      = "adot-collector"
-    image     = "public.ecr.aws/aws-observability/aws-otel-collector:latest"
+    image     = var.adot_image
+    cpu       = var.adot_cpu
+    memory    = var.adot_memory
     essential = false
 
     dependsOn = [
@@ -143,13 +145,17 @@ resource "aws_ecs_task_definition" "pgdog" {
   memory                   = var.task_memory
   execution_role_arn       = aws_iam_role.task_execution[0].arn
   task_role_arn            = aws_iam_role.task[0].arn
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = var.cpu_architecture
+  }
 
   container_definitions = jsonencode(concat(
     [
       # Init container to fetch secrets and create config files
       {
         name       = "init-config"
-        image      = "public.ecr.aws/docker/library/alpine:3.19"
+        image      = var.init_image
         essential  = false
         entryPoint = ["/bin/sh", "-c"]
 
@@ -252,6 +258,15 @@ EOF
           }
         ]
 
+        # A pooler holds one file descriptor per client and server connection.
+        ulimits = [
+          {
+            name      = "nofile"
+            softLimit = var.nofile_limit
+            hardLimit = var.nofile_limit
+          }
+        ]
+
         environment = [
           {
             name  = "CONFIG_HASH"
@@ -303,6 +318,8 @@ resource "aws_ecs_service" "pgdog" {
   cluster         = local.ecs_cluster_arn
   task_definition = aws_ecs_task_definition.pgdog[0].arn
   desired_count   = var.desired_count
+
+  enable_execute_command = var.enable_execute_command
 
   # Use capacity provider strategy if specified, otherwise default to FARGATE launch type
   launch_type = var.capacity_provider_strategy == null ? "FARGATE" : null

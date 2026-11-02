@@ -160,6 +160,30 @@ resource "aws_iam_role_policy" "task_cloudwatch_metrics" {
   })
 }
 
+# ECS Exec needs the SSM messages channel from the task role
+resource "aws_iam_role_policy" "task_ecs_exec" {
+  count = var.create_resources && var.enable_execute_command ? 1 : 0
+
+  name = "${var.name}-pgdog-ecs-exec"
+  role = aws_iam_role.task[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssmmessages:CreateControlChannel",
+          "ssmmessages:CreateDataChannel",
+          "ssmmessages:OpenControlChannel",
+          "ssmmessages:OpenDataChannel"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 # ------------------------------------------------------------------------------
 # Security Group for ECS Tasks
 # ------------------------------------------------------------------------------

@@ -407,6 +407,53 @@ variable "capacity_provider_strategy" {
   default = null
 }
 
+variable "cpu_architecture" {
+  description = "CPU architecture of the tasks: X86_64 or ARM64. ARM64 needs arm64 builds of every image in the task (PgDog, init and ADOT images)."
+  type        = string
+  default     = "X86_64"
+
+  validation {
+    condition     = contains(["X86_64", "ARM64"], var.cpu_architecture)
+    error_message = "cpu_architecture must be X86_64 or ARM64."
+  }
+}
+
+variable "nofile_limit" {
+  description = "Open file descriptor limit (soft and hard) for the PgDog container. PgDog uses one descriptor per client and per server connection."
+  type        = number
+  default     = 65536
+}
+
+variable "enable_execute_command" {
+  description = "Enable ECS Exec on the service, so you can open a shell in a running task. Adds the SSM messages permissions to the task role."
+  type        = bool
+  default     = false
+}
+
+variable "init_image" {
+  description = "Image for the init container that writes the config files"
+  type        = string
+  default     = "public.ecr.aws/docker/library/alpine:3.23"
+}
+
+variable "adot_image" {
+  description = "Image for the ADOT collector sidecar (used when export_metrics_to_cloudwatch is true)"
+  type        = string
+  default     = "public.ecr.aws/aws-observability/aws-otel-collector:v0.50.0"
+}
+
+variable "adot_cpu" {
+  description = "CPU units reserved for the ADOT sidecar, so it cannot take CPU from PgDog"
+  type        = number
+  default     = 128
+}
+
+variable "adot_memory" {
+  description = "Hard memory limit in MiB for the ADOT sidecar. ECS stops only this container if it goes over, never PgDog."
+  type        = number
+  default     = 256
+}
+
 # ------------------------------------------------------------------------------
 # Logging
 # ------------------------------------------------------------------------------

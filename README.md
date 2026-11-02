@@ -229,6 +229,13 @@ pgdog = {
 | `min_capacity` | Minimum number of ECS tasks for auto-scaling | `number` | `2` | no |
 | `max_capacity` | Maximum number of ECS tasks for auto-scaling | `number` | `10` | no |
 | `capacity_provider_strategy` | Capacity provider strategy (if not set, uses FARGATE launch type) | `list(object)` | `null` | no |
+| `cpu_architecture` | `X86_64` or `ARM64`. ARM64 needs arm64 builds of all images in the task | `string` | `X86_64` | no |
+| `nofile_limit` | Open file descriptor limit for the PgDog container | `number` | `65536` | no |
+| `enable_execute_command` | Enable ECS Exec on the service | `bool` | `false` | no |
+| `init_image` | Image for the init container | `string` | `public.ecr.aws/docker/library/alpine:3.23` | no |
+| `adot_image` | Image for the ADOT sidecar | `string` | `public.ecr.aws/aws-observability/aws-otel-collector:v0.50.0` | no |
+| `adot_cpu` | CPU units reserved for the ADOT sidecar | `number` | `128` | no |
+| `adot_memory` | Hard memory limit (MiB) for the ADOT sidecar | `number` | `256` | no |
 
 ```hcl
 # Default: Fargate
