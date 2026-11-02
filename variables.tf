@@ -57,6 +57,24 @@ variable "nlb_internal" {
   default     = true
 }
 
+variable "nlb_security_group_ids" {
+  description = "Security group IDs to attach to the NLB. When set, the task security group also accepts traffic from these groups. Review the plan before changing this on an existing NLB."
+  type        = list(string)
+  default     = []
+}
+
+variable "ingress_cidr_blocks" {
+  description = "CIDR blocks allowed to reach the PgDog and health check ports on the tasks. Defaults to the VPC CIDR. Must include the NLB subnet CIDRs, because the NLB is the source of the traffic."
+  type        = list(string)
+  default     = null
+}
+
+variable "metrics_ingress_cidr_blocks" {
+  description = "CIDR blocks allowed to reach the metrics port. Defaults to ingress_cidr_blocks. Set to [] when the only scraper is the ADOT sidecar, which uses localhost."
+  type        = list(string)
+  default     = null
+}
+
 # ------------------------------------------------------------------------------
 # RDS Configuration
 # ------------------------------------------------------------------------------
@@ -431,6 +449,28 @@ variable "deregistration_delay" {
   description = "Seconds to wait before deregistering a target from the NLB"
   type        = number
   default     = 30
+}
+
+variable "health_check_interval" {
+  description = "Seconds between NLB target health checks (10 or 30)"
+  type        = number
+  default     = 30
+
+  validation {
+    condition     = contains([10, 30], var.health_check_interval)
+    error_message = "health_check_interval must be 10 or 30 for a Network Load Balancer."
+  }
+}
+
+variable "health_check_threshold" {
+  description = "Consecutive NLB health check results needed to mark a target healthy or unhealthy (2 to 10)"
+  type        = number
+  default     = 3
+
+  validation {
+    condition     = var.health_check_threshold >= 2 && var.health_check_threshold <= 10
+    error_message = "health_check_threshold must be between 2 and 10."
+  }
 }
 
 # ------------------------------------------------------------------------------

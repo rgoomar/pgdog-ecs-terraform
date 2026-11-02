@@ -164,6 +164,13 @@ resource "aws_iam_role_policy" "task_cloudwatch_metrics" {
 # Security Group for ECS Tasks
 # ------------------------------------------------------------------------------
 
+locals {
+  # Default: the whole VPC. NLB targets of type "ip" see the NLB node IPs as the
+  # source, so a narrower list must still include the NLB subnet CIDRs.
+  ingress_cidr_blocks         = var.ingress_cidr_blocks != null ? var.ingress_cidr_blocks : compact([one(data.aws_vpc.this[*].cidr_block)])
+  metrics_ingress_cidr_blocks = var.metrics_ingress_cidr_blocks != null ? var.metrics_ingress_cidr_blocks : local.ingress_cidr_blocks
+}
+
 resource "aws_security_group" "ecs_tasks" {
   count = var.create_resources ? 1 : 0
 
@@ -173,22 +180,24 @@ resource "aws_security_group" "ecs_tasks" {
 
   # Ingress from NLB on PgDog port
   ingress {
-    description = "PgDog PostgreSQL port"
-    from_port   = local.pgdog_general.port
-    to_port     = local.pgdog_general.port
-    protocol    = "tcp"
-    cidr_blocks = [data.aws_vpc.this[0].cidr_block]
+    description     = "PgDog PostgreSQL port"
+    from_port       = local.pgdog_general.port
+    to_port         = local.pgdog_general.port
+    protocol        = "tcp"
+    cidr_blocks     = local.ingress_cidr_blocks
+    security_groups = var.nlb_security_group_ids
   }
 
-  # Ingress for metrics port (if enabled)
+  # Ingress for metrics port (if enabled). No rule when the CIDR list is empty:
+  # a rule without a source is invalid.
   dynamic "ingress" {
-    for_each = local.pgdog_general.openmetrics_port != null ? [1] : []
+    for_each = local.pgdog_general.openmetrics_port != null && length(local.metrics_ingress_cidr_blocks) > 0 ? [1] : []
     content {
       description = "PgDog metrics port"
       from_port   = local.pgdog_general.openmetrics_port
       to_port     = local.pgdog_general.openmetrics_port
       protocol    = "tcp"
-      cidr_blocks = [data.aws_vpc.this[0].cidr_block]
+      cidr_blocks = local.metrics_ingress_cidr_blocks
     }
   }
 
@@ -196,11 +205,12 @@ resource "aws_security_group" "ecs_tasks" {
   dynamic "ingress" {
     for_each = local.pgdog_general.healthcheck_port != null ? [1] : []
     content {
-      description = "PgDog health check port"
-      from_port   = local.pgdog_general.healthcheck_port
-      to_port     = local.pgdog_general.healthcheck_port
-      protocol    = "tcp"
-      cidr_blocks = [data.aws_vpc.this[0].cidr_block]
+      description     = "PgDog health check port"
+      from_port       = local.pgdog_general.healthcheck_port
+      to_port         = local.pgdog_general.healthcheck_port
+      protocol        = "tcp"
+      cidr_blocks     = local.ingress_cidr_blocks
+      security_groups = var.nlb_security_group_ids
     }
   }
 

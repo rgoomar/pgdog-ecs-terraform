@@ -126,6 +126,9 @@ module "pgdog" {
 | `security_group_ids` | Additional security group IDs to attach to ECS tasks | `list(string)` | `[]` | no |
 | `nlb_subnet_ids` | Subnet IDs for NLB (defaults to var.subnet_ids if not specified) | `list(string)` | `null` | no |
 | `nlb_internal` | Whether the NLB should be internal | `bool` | `true` | no |
+| `nlb_security_group_ids` | Security groups to attach to the NLB. The task security group then also accepts traffic from them | `list(string)` | `[]` | no |
+| `ingress_cidr_blocks` | CIDRs allowed to reach the PgDog and health check ports. Include the NLB subnet CIDRs | `list(string)` | VPC CIDR | no |
+| `metrics_ingress_cidr_blocks` | CIDRs allowed to reach the metrics port. `[]` closes it (the ADOT sidecar uses localhost) | `list(string)` | `ingress_cidr_blocks` | no |
 
 ```hcl
 vpc_id           = "vpc-123456"
@@ -264,11 +267,15 @@ log_retention_days = 7
 |------|-------------|------|---------|----------|
 | `health_check_grace_period` | Seconds to wait before starting health checks on a new task | `number` | `60` | no |
 | `deregistration_delay` | Seconds to wait before deregistering a target from the NLB | `number` | `30` | no |
+| `health_check_interval` | Seconds between NLB health checks (10 or 30) | `number` | `30` | no |
+| `health_check_threshold` | Consecutive results needed to mark a target healthy or unhealthy | `number` | `3` | no |
 
 ```hcl
 health_check_grace_period = 120
 deregistration_delay      = 60
 ```
+
+When `pgdog.general.healthcheck_port` is set (for example `8080`), the NLB uses an HTTP health check on that port. PgDog answers `200` while at least one pool is up and `502` when all pools are down. Without it, the NLB only checks that the PgDog port accepts TCP connections, and every check opens a client connection.
 
 ### CloudWatch metrics export
 

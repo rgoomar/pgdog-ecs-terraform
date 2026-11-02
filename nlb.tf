@@ -9,6 +9,7 @@ resource "aws_lb" "pgdog" {
   internal           = var.nlb_internal
   load_balancer_type = "network"
   subnets            = coalesce(var.nlb_subnet_ids, var.subnet_ids)
+  security_groups    = length(var.nlb_security_group_ids) > 0 ? var.nlb_security_group_ids : null
 
   enable_cross_zone_load_balancing = true
 
@@ -28,13 +29,16 @@ resource "aws_lb_target_group" "pgdog" {
   vpc_id      = var.vpc_id
   target_type = "ip"
 
+  # With healthcheck_port set, PgDog serves HTTP 200 while at least one pool is
+  # up and 502 when all pools are down. Otherwise fall back to a TCP check.
   health_check {
     enabled             = true
-    protocol            = "TCP"
+    protocol            = local.pgdog_general.healthcheck_port != null ? "HTTP" : "TCP"
+    path                = local.pgdog_general.healthcheck_port != null ? "/" : null
     port                = local.pgdog_general.healthcheck_port != null ? local.pgdog_general.healthcheck_port : local.pgdog_general.port
-    healthy_threshold   = 3
-    unhealthy_threshold = 3
-    interval            = 30
+    healthy_threshold   = var.health_check_threshold
+    unhealthy_threshold = var.health_check_threshold
+    interval            = var.health_check_interval
   }
 
   deregistration_delay = var.deregistration_delay
